@@ -4,6 +4,29 @@ from .data_utils.data_loader import image_segmentation_generator , verify_segmen
 from .models import model_from_name
 import os
 import six
+import tensorflow as tf
+import keras
+
+# define iou or jaccard loss function
+def iou_loss(y_true, y_pred):
+    y_true_rs = tf.reshape(y_true, [-1])
+    y_pred_rs = tf.reshape(y_pred, [-1])
+
+    intersection = tf.reduce_sum(y_true_rs * y_pred_rs)
+    score = (intersection + 1.) / (tf.reduce_sum(y_true_rs) + tf.reduce_sum(y_pred_rs) - intersection + 1.)
+    return 1 - score
+
+# combine bce loss and iou loss
+def iou_bce_loss(y_true, y_pred):
+    return 0.5 * keras.losses.binary_crossentropy(y_true, y_pred) + 0.5 * iou_loss(y_true, y_pred)
+
+def mean_iou(y_true, y_pred):
+    y_pred = tf.round(y_pred)
+    intersect = tf.reduce_sum(y_true * y_pred, axis=[1, 2, 3])
+    union = tf.reduce_sum(y_true, axis=[1, 2, 3]) + tf.reduce_sum(y_pred, axis=[1, 2, 3])
+    smooth = tf.ones(tf.shape(intersect))
+    return tf.reduce_mean((intersect + smooth) / (union - intersect + smooth))
+
 
 def find_latest_checkpoint( checkpoints_path ):
 	ep = 0
@@ -60,7 +83,7 @@ def train( model  ,
 		assert not (  val_annotations is None ) 
 
 	if not optimizer_name is None:
-		model.compile(loss='categorical_crossentropy',
+		model.compile(loss=iou_bce_loss,
 			optimizer= optimizer_name ,
 			metrics=['accuracy'])
 
