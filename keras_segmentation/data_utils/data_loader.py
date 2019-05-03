@@ -78,7 +78,10 @@ def get_segmentation_arr( path , nClasses ,  width , height , no_reshape=False )
 	img = img[:, : , 0]
 
 	for c in range(nClasses):
-		seg_labels[: , : , c ] = (img == c ).astype(int)
+		if c == 0:
+			seg_labels[: , : , c ] = 1
+		else:
+			seg_labels[: , : , c ] = (img == c ).astype(int)
 
 
 	
