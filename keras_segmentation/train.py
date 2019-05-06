@@ -59,7 +59,8 @@ def train( model  ,
 		auto_resume_checkpoint=False ,
 		load_weights=None ,
 		steps_per_epoch=512,
-		optimizer_name='adadelta' 
+		optimizer_name='adadelta',
+		lossfn='categorical_crossentropy'
 	):
 
 
@@ -83,7 +84,12 @@ def train( model  ,
 		assert not (  val_annotations is None ) 
 
 	if not optimizer_name is None:
-		model.compile(loss=iou_bce_loss,
+		if lossfn == 'iou_loss':
+			lossfn = iou_loss
+		elif lossfn == 'iou_bce_loss':
+			lossfn == iou_bce_loss
+			
+		model.compile(loss=lossfn,
 			optimizer= optimizer_name ,
 			metrics=['accuracy'])
 
