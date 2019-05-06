@@ -60,7 +60,8 @@ def train( model  ,
 		load_weights=None ,
 		steps_per_epoch=512,
 		optimizer_name='adadelta',
-		lossfn='categorical_crossentropy'
+		lossfn='categorical_crossentropy',
+		use_multiprocessing=True
 	):
 
 
@@ -88,7 +89,7 @@ def train( model  ,
 			lossfn = iou_loss
 		elif lossfn == 'iou_bce_loss':
 			lossfn == iou_bce_loss
-			
+
 		model.compile(loss=lossfn,
 			optimizer= optimizer_name ,
 			metrics=['accuracy'])
@@ -132,7 +133,7 @@ def train( model  ,
 	if not validate:
 		for ep in range( epochs ):
 			print("Starting Epoch " , ep )
-			model.fit_generator( train_gen , steps_per_epoch  , epochs=1 )
+			model.fit_generator( train_gen , steps_per_epoch  , epochs=1, use_multiprocessing=use_multiprocessing )
 			if not checkpoints_path is None:
 				model.save_weights( checkpoints_path + "." + str( ep ) )
 				print("saved " , checkpoints_path + ".model." + str( ep ) )
@@ -140,7 +141,7 @@ def train( model  ,
 	else:
 		for ep in range( epochs ):
 			print("Starting Epoch " , ep )
-			model.fit_generator( train_gen , steps_per_epoch  , validation_data=val_gen , validation_steps=200 ,  epochs=1 )
+			model.fit_generator( train_gen , steps_per_epoch  , validation_data=val_gen , validation_steps=200 ,  epochs=1, use_multiprocessing=use_multiprocessing )
 			if not checkpoints_path is None:
 				model.save_weights( checkpoints_path + "." + str( ep )  )
 				print("saved " , checkpoints_path + ".model." + str( ep ) )
